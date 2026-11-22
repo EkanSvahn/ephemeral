@@ -1,6 +1,6 @@
 # Deployment Runbook
 
-This runbook covers a simple production flow for VaultDrop on Ubuntu (physical host or cloud VM) using Docker Compose.
+This runbook covers a simple production flow for Ephemeral on Ubuntu (physical host or cloud VM) using Docker Compose.
 
 ## 1) Prerequisites
 - Ubuntu host with Docker Engine and Docker Compose plugin installed.
@@ -56,13 +56,13 @@ Use the same commands as section 3. Ensure:
 
 ## 5) Rollback
 If a release causes issues:
-1. Identify last known good git tag (example `v0.1.0`).
+1. Identify the last known good git tag (`git tag --sort=-v:refname` lists them, newest first).
 2. Checkout that tag on the host.
 3. Redeploy containers.
 
 ```bash
 git fetch --tags
-git checkout v0.1.0
+git checkout vX.Y.Z   # the last known good tag
 cd infra
 docker compose -f docker-compose.prod.yml up -d --build
 ```

@@ -11,6 +11,7 @@
 
 ## Nice Next
 - [ ] Add encrypted metadata backup strategy (no plaintext content).
-- [ ] Add Prometheus metrics with sensitive-field scrubbing.
-- [ ] Add security.txt and disclosure policy.
+- [x] Add Prometheus metrics with sensitive-field scrubbing.
+- [x] Add a disclosure policy (`SECURITY.md`).
+- [ ] Add `security.txt` for your deployment.
 - [ ] Add optional MFA-protected admin view for health/ops only.

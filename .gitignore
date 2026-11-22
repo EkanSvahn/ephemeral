@@ -20,3 +20,6 @@ infra/.env
 *.log
 
 /agents
+
+# Private working notes, never committed
+CLAUDE.local.md
