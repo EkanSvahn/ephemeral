@@ -15,7 +15,7 @@ ones most likely to be merged.
 ## Development setup
 
 You need Docker with the Compose plugin. To run tests outside Docker you also
-need Go 1.25 or later and Node 22 or later.
+need Go 1.27 or later and Node 22 or later.
 
 ```bash
 cd infra
