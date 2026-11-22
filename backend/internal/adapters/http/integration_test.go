@@ -11,8 +11,8 @@ import (
 	"sync"
 	"testing"
 
-	"victora-secret-code/backend/internal/app"
-	"victora-secret-code/backend/internal/ports"
+	"ephemeral/backend/internal/app"
+	"ephemeral/backend/internal/ports"
 )
 
 type integrationRepo struct {

@@ -7,7 +7,7 @@ import (
 	"sync"
 	"time"
 
-	"victora-secret-code/backend/internal/metrics"
+	"ephemeral/backend/internal/metrics"
 )
 
 type tokenBucket struct {

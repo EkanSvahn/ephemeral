@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"victora-secret-code/backend/internal/metrics"
+	"ephemeral/backend/internal/metrics"
 )
 
 func TestLimiterAllowRefill(t *testing.T) {

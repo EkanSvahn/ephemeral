@@ -1,6 +1,6 @@
-module victora-secret-code/backend
+module ephemeral/backend
 
-go 1.25.9
+go 1.27.4
 
 require (
 	github.com/redis/go-redis/v9 v9.18.0

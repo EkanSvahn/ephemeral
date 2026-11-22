@@ -1,5 +1,5 @@
 {
-  "name": "victora-secret-code-frontend",
+  "name": "ephemeral-frontend",
   "version": "0.1.4",
   "private": true,
   "type": "module",
@@ -12,13 +12,13 @@
   },
   "dependencies": {
     "@noble/hashes": "1.7.1",
-    "vue": "3.5.28",
+    "vue": "3.5.46",
     "vue-router": "5.0.2"
   },
   "devDependencies": {
     "@vitejs/plugin-vue": "6.0.4",
     "typescript": "5.9.3",
     "vite": "^7.3.2",
-    "vitest": "^3.0.0"
+    "vitest": "^4.1.12"
   }
 }

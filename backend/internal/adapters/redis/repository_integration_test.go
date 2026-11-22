@@ -9,10 +9,10 @@ import (
 	"testing"
 	"time"
 
+	"ephemeral/backend/internal/ports"
 	goredis "github.com/redis/go-redis/v9"
 	"github.com/testcontainers/testcontainers-go"
 	tcredis "github.com/testcontainers/testcontainers-go/modules/redis"
-	"victora-secret-code/backend/internal/ports"
 )
 
 func startRedis(t *testing.T) *Repository {

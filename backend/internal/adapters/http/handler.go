@@ -12,9 +12,9 @@ import (
 	"time"
 	"unicode"
 
-	"victora-secret-code/backend/internal/app"
-	"victora-secret-code/backend/internal/domain"
-	"victora-secret-code/backend/internal/metrics"
+	"ephemeral/backend/internal/app"
+	"ephemeral/backend/internal/domain"
+	"ephemeral/backend/internal/metrics"
 )
 
 type ReadinessCheck func(ctx context.Context) error

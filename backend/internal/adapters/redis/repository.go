@@ -6,8 +6,8 @@ import (
 	"errors"
 	"time"
 
+	"ephemeral/backend/internal/ports"
 	"github.com/redis/go-redis/v9"
-	"victora-secret-code/backend/internal/ports"
 )
 
 var consumeLua = redis.NewScript(`
