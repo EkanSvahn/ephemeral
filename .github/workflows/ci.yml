@@ -8,8 +8,8 @@ jobs:
   backend-test:
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.27.4'
       - name: Test backend
@@ -26,8 +26,8 @@ jobs:
     runs-on: ubuntu-latest
     needs: backend-test
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-go@v5
+      - uses: actions/checkout@v7
+      - uses: actions/setup-go@v7
         with:
           go-version: '1.27.4'
       - name: Run integration tests (real Redis via testcontainers)
@@ -39,8 +39,8 @@ jobs:
     env:
       VITE_APP_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
           node-version: '22'
       - name: Install frontend
@@ -63,7 +63,7 @@ jobs:
     permissions:
       contents: read
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Build backend image
         run: docker build -t ephemeral-backend:ci ./backend
