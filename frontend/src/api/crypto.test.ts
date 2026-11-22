@@ -140,6 +140,23 @@ describe('PBKDF2 legacy backward-compat', () => {
   })
 })
 
+describe('Argon2id known-answer', () => {
+  // Created once with @noble/hashes 1.7.1, in the format encryptText writes.
+  // If a library upgrade changes how the key is derived, links that are
+  // already shared stop opening. This test fails first.
+  const fixture = {
+    password: 'lösenord-ÅÄÖ-🔑',
+    plaintext: 'created with @noble/hashes 1.7.1',
+    meta: '{"v":1,"t":"text","alg":"AES-GCM-256","kdf":"ARGON2ID","tt":3,"tm":65536,"tp":1,"s":"hc1sJc3pkohFVuRRNVJpig"}',
+    ciphertext: '{"iv":"NSAEC3pCs8cuDyMe","ct":"FnNpSELxZFPBIPtkPQ5ZEmj_6cphcXdjtpNsnq5t9owRXzcV9Wgwinw3cTb94LB6"}'
+  }
+
+  it('decrypts a secret created with an earlier library version', async () => {
+    const decrypted = await decryptText(fixture.ciphertext, fixture.meta, '', fixture.password)
+    expect(decrypted).toBe(fixture.plaintext)
+  })
+})
+
 describe('cryptographic uniqueness', () => {
   it('generates unique IV and link secret across many no-password encryptions', async () => {
     const ivs = new Set<string>()
