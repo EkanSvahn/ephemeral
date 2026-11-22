@@ -4,9 +4,9 @@ import (
 	"context"
 	"errors"
 
-	"victora-secret-code/backend/internal/domain"
-	"victora-secret-code/backend/internal/ports"
-	"victora-secret-code/backend/internal/security"
+	"ephemeral/backend/internal/domain"
+	"ephemeral/backend/internal/ports"
+	"ephemeral/backend/internal/security"
 )
 
 var (

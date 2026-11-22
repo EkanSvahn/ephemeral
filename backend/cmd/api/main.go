@@ -8,11 +8,11 @@ import (
 	"syscall"
 	"time"
 
+	httpadapter "ephemeral/backend/internal/adapters/http"
+	redisadapter "ephemeral/backend/internal/adapters/redis"
+	applayer "ephemeral/backend/internal/app"
+	"ephemeral/backend/internal/config"
 	"github.com/redis/go-redis/v9"
-	redisadapter "victora-secret-code/backend/internal/adapters/redis"
-	applayer "victora-secret-code/backend/internal/app"
-	httpadapter "victora-secret-code/backend/internal/adapters/http"
-	"victora-secret-code/backend/internal/config"
 )
 
 func main() {

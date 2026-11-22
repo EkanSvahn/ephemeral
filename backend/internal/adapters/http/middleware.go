@@ -8,7 +8,7 @@ import (
 	"strings"
 	"time"
 
-	"victora-secret-code/backend/internal/security"
+	"ephemeral/backend/internal/security"
 )
 
 type contextKey string

@@ -8,7 +8,7 @@ import (
 	"strings"
 	"testing"
 
-	"victora-secret-code/backend/internal/metrics"
+	"ephemeral/backend/internal/metrics"
 )
 
 func TestMetricsEndpointReturnsCounters(t *testing.T) {

@@ -5,9 +5,9 @@ import (
 	"net/http"
 	"time"
 
-	"victora-secret-code/backend/internal/app"
-	"victora-secret-code/backend/internal/config"
-	"victora-secret-code/backend/internal/metrics"
+	"ephemeral/backend/internal/app"
+	"ephemeral/backend/internal/config"
+	"ephemeral/backend/internal/metrics"
 )
 
 func NewServer(cfg config.Config, service *app.Service, readiness ReadinessCheck) *http.Server {

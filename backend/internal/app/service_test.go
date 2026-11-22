@@ -5,8 +5,8 @@ import (
 	"errors"
 	"testing"
 
-	"victora-secret-code/backend/internal/domain"
-	"victora-secret-code/backend/internal/ports"
+	"ephemeral/backend/internal/domain"
+	"ephemeral/backend/internal/ports"
 )
 
 type fakeRepo struct {

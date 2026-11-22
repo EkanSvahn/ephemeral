@@ -1,4 +1,4 @@
-module victora-secret-code/backend
+module ephemeral/backend
 
 go 1.25.9
 

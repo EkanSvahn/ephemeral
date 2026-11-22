@@ -3,9 +3,9 @@ package ports
 import "context"
 
 type SecretRecord struct {
-	Meta       string `json:"meta"`
-	Ciphertext string `json:"ciphertext"`
-	Kind       string `json:"kind"`
+	Meta           string `json:"meta"`
+	Ciphertext     string `json:"ciphertext"`
+	Kind           string `json:"kind"`
 	ViewsRemaining *int64 `json:"views_remaining,omitempty"`
 }
 
