@@ -1,0 +1,33 @@
+name: Feature request
+description: Suggest a change or an addition
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Ephemeral has a narrow job: hand a secret over once, then forget it. Suggestions that keep it small are the ones most likely to be picked up. The [roadmap](https://github.com/EkanSvahn/ephemeral/blob/main/docs/roadmap.md) shows what is already planned.
+  - type: textarea
+    id: problem
+    attributes:
+      label: The problem
+      description: What are you trying to do, and what gets in the way today?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: What you would like to see
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: Alternatives and workarounds
+      description: Other ways to solve it, including what you do today.
+  - type: checkboxes
+    id: server-knowledge
+    attributes:
+      label: What the server learns
+      description: The server must never receive plaintext or keys.
+      options:
+        - label: This change would send more information to the server than today

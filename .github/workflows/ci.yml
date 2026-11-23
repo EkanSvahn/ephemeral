@@ -1,8 +1,22 @@
 name: CI
 
+# Branches are tested through their pull request. Pushes only trigger a run
+# on main and on release tags, so a pull request no longer runs everything
+# twice.
 on:
   push:
+    branches: [main]
+    tags: ['v*']
   pull_request:
+
+permissions:
+  contents: read
+
+# A newer push to the same pull request replaces the run that is in progress.
+# Runs on main and on tags are never cancelled.
+concurrency:
+  group: ci-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
   backend-test:
@@ -12,6 +26,18 @@ jobs:
       - uses: actions/setup-go@v7
         with:
           go-version: '1.27.4'
+      - name: Check formatting
+        working-directory: backend
+        run: |
+          unformatted="$(gofmt -l .)"
+          if [ -n "$unformatted" ]; then
+            echo "Run gofmt on:" >&2
+            echo "$unformatted" >&2
+            exit 1
+          fi
+      - name: Vet backend
+        working-directory: backend
+        run: go vet ./...
       - name: Test backend
         working-directory: backend
         run: |
@@ -43,6 +69,17 @@ jobs:
       - uses: actions/setup-node@v7
         with:
           node-version: '22'
+      # The UI shows the version from package.json in images built with
+      # Docker, so a release tag has to match it.
+      - name: Check that the tag matches package.json
+        if: github.ref_type == 'tag'
+        working-directory: frontend
+        run: |
+          expected="v$(node -p "require('./package.json').version")"
+          if [ "$GITHUB_REF_NAME" != "$expected" ]; then
+            echo "Tag $GITHUB_REF_NAME does not match frontend/package.json ($expected)" >&2
+            exit 1
+          fi
       - name: Install frontend
         working-directory: frontend
         run: npm ci
@@ -60,8 +97,6 @@ jobs:
   container-scan:
     runs-on: ubuntu-latest
     needs: [backend-test, frontend-build]
-    permissions:
-      contents: read
     steps:
       - uses: actions/checkout@v7
 

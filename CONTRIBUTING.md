@@ -12,6 +12,9 @@ ones most likely to be merged.
 - **Security problems:** do not open an issue. Follow
   [SECURITY.md](SECURITY.md).
 
+Everyone taking part is expected to follow the
+[Code of Conduct](CODE_OF_CONDUCT.md).
+
 ## Development setup
 
 You need Docker with the Compose plugin. To run tests outside Docker you also
