@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"log/slog"
 	"net/http"
+	"regexp"
 	"strings"
 	"time"
 
@@ -15,9 +16,16 @@ type contextKey string
 
 const requestIDKey contextKey = "request_id"
 
+// A request id supplied by the client is echoed in the response and written
+// to the log, so only short ids from a harmless alphabet are accepted.
+var requestIDPattern = regexp.MustCompile(`^[A-Za-z0-9._-]{1,64}$`)
+
 func withRequestID(next http.Handler) http.Handler {
 	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		rid := r.Header.Get("X-Request-Id")
+		if !requestIDPattern.MatchString(rid) {
+			rid = ""
+		}
 		if rid == "" {
 			generated, err := security.NewURLSafeID(12)
 			if err == nil {
@@ -43,13 +51,14 @@ func requestLogger(logger *slog.Logger, resolveClientIP func(*http.Request) stri
 			next.ServeHTTP(recorder, r)
 
 			requestID, _ := r.Context().Value(requestIDKey).(string)
-			route := routeLabel(r.Method, r.URL.Path)
+			method := methodLabel(r.Method)
+			route := routeLabel(method, r.URL.Path)
 			durationMs := time.Since(started).Milliseconds()
 
 			logger.Info(
 				"http_request",
 				"request_id", requestID,
-				"method", r.Method,
+				"method", method,
 				"route", route,
 				"status", recorder.statusCode,
 				"duration_ms", durationMs,
@@ -127,7 +136,11 @@ func chain(h http.Handler, middlewares ...func(http.Handler) http.Handler) http.
 func writeJSON(w http.ResponseWriter, status int, payload any) {
 	w.Header().Set("Content-Type", "application/json")
 	w.WriteHeader(status)
-	_ = json.NewEncoder(w).Encode(payload)
+	if err := json.NewEncoder(w).Encode(payload); err != nil {
+		// The status line is already sent, so the client cannot be told.
+		// The payload may be ciphertext and is never logged.
+		slog.Warn("response_write_failed", "status", status, "error", err.Error())
+	}
 }
 
 func writeError(w http.ResponseWriter, status int, code, message string) {
@@ -151,13 +164,27 @@ func (s *statusRecorder) WriteHeader(statusCode int) {
 	s.ResponseWriter.WriteHeader(statusCode)
 }
 
+// methodLabel returns the request method for the access log. The method is
+// chosen by the client, so anything outside the usual set becomes "OTHER".
+func methodLabel(method string) string {
+	switch method {
+	case http.MethodGet, http.MethodHead, http.MethodPost, http.MethodPut,
+		http.MethodPatch, http.MethodDelete, http.MethodOptions:
+		return method
+	}
+	return "OTHER"
+}
+
+// routeLabel returns the route for the access log. Only known routes are
+// written out. Any other path is chosen by the client and may contain a
+// secret id, so it is logged as "unmatched".
 func routeLabel(method, rawPath string) string {
 	if route, ok := classifyProtectedRoute(method, rawPath); ok {
 		return route
 	}
-	path := strings.TrimSpace(rawPath)
-	if path == "/api/health" {
-		return "GET /api/health"
+	switch p := strings.TrimSpace(rawPath); p {
+	case "/api/health", "/api/ready", "/api/status", "/api/metrics":
+		return method + " " + p
 	}
-	return method + " " + path
+	return method + " unmatched"
 }
