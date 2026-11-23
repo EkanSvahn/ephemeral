@@ -2,10 +2,16 @@ package config
 
 import (
 	"fmt"
+	"net"
 	"os"
 	"strconv"
 	"strings"
 	"time"
+)
+
+const (
+	minBodyBytes = 4 * 1024
+	maxBodyBytes = 1024 * 1024 * 1024
 )
 
 type Config struct {
@@ -33,7 +39,7 @@ func Load() (Config, error) {
 	cfg := Config{
 		ListenAddr:      getenv("LISTEN_ADDR", ":8080"),
 		RedisURL:        getenv("REDIS_URL", "redis://redis:6379/0"),
-		TrustedProxyCID: getenv("TRUSTED_PROXY_CIDR", ""),
+		TrustedProxyCID: strings.TrimSpace(getenv("TRUSTED_PROXY_CIDR", "")),
 	}
 	allowedOriginsRaw := getenv("ALLOWED_ORIGINS", "")
 	if allowedOriginsRaw == "" {
@@ -46,6 +52,11 @@ func Load() (Config, error) {
 	cfg.MaxBodyBytes, err = getenvInt64("MAX_BODY_BYTES", 90*1024*1024)
 	if err != nil {
 		return Config{}, fmt.Errorf("MAX_BODY_BYTES: %w", err)
+	}
+	// The upper bound is far above what the largest allowed file needs, and
+	// keeps the value inside the range of int on every platform.
+	if cfg.MaxBodyBytes < minBodyBytes || cfg.MaxBodyBytes > maxBodyBytes {
+		return Config{}, fmt.Errorf("MAX_BODY_BYTES must be between %d and %d", minBodyBytes, maxBodyBytes)
 	}
 	cfg.MaxMetaBytes, err = getenvInt("MAX_META_BYTES", 16*1024)
 	if err != nil {
@@ -123,6 +134,38 @@ func Load() (Config, error) {
 	cfg.RequestTimeout = time.Duration(timeoutMs) * time.Millisecond
 
 	return cfg, nil
+}
+
+// LargestStorableFile returns the size of the largest file whose encrypted
+// form fits within MaxCipherBytes. The browser adds a 16-byte authentication
+// tag, base64-encodes the result, which makes it a third larger, and wraps it
+// in a small JSON envelope together with the IV.
+func (c Config) LargestStorableFile() int64 {
+	const envelopeBytes = 64
+	const tagBytes = 16
+	encoded := int64(c.MaxCipherBytes) - envelopeBytes
+	if encoded <= 0 {
+		return 0
+	}
+	return encoded/4*3 - tagBytes
+}
+
+// Warnings returns problems in the configuration that do not stop the API
+// from starting but are probably not what the operator meant.
+func (c Config) Warnings() []string {
+	var out []string
+	if largest := c.LargestStorableFile(); c.MaxFileBytes > largest {
+		out = append(out, fmt.Sprintf(
+			"MAX_FILE_BYTES is %d, but MAX_CIPHERTEXT_BYTES only has room for files up to %d bytes once they are encrypted and encoded; larger files will be rejected. Raise MAX_CIPHERTEXT_BYTES and MAX_BODY_BYTES, or lower MAX_FILE_BYTES",
+			c.MaxFileBytes, largest,
+		))
+	}
+	if c.TrustedProxyCID != "" {
+		if _, _, err := net.ParseCIDR(c.TrustedProxyCID); err != nil {
+			out = append(out, "TRUSTED_PROXY_CIDR is not a valid CIDR and is ignored; every client behind the proxy shares one rate limit")
+		}
+	}
+	return out
 }
 
 func getenv(key, fallback string) string {
