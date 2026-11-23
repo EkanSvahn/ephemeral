@@ -40,6 +40,15 @@ open an issue first so the work is not done twice.
 - CI follows the self-hosting steps and validates both compose files and the
   proxy configuration
 
+**Hardening before the first public release**
+
+- Client address behind a proxy is read from the right of
+  `X-Forwarded-For`, `HEAD` requests are rate limited, IPv6 clients are
+  counted per /64, and refilled rate-limit buckets are dropped every minute
+- Secret ids no longer appear in any log the shipped stack writes
+- The font ships with the app. The page makes no third-party request
+- A full threat model, a changelog, and issue and pull request templates
+
 ## Next: operations
 
 Make a running instance easier to observe and to trust.
@@ -50,10 +59,14 @@ Make a running instance easier to observe and to trust.
 - **Alerting guide.** `docs/alerting.md` with example Prometheus rules: 4xx
   and 5xx spikes, a rising `rate_limited` counter, Redis ping failures,
   container restart loops, certificate expiry.
-- **Threat model additions.** Spell out adversaries that are covered today but
-  not written down: an operator with Redis access, a malicious browser
-  extension (out of scope), log poisoning through crafted paths and headers,
-  and supply chain risk in container base images.
+- **An upper lifetime for view-limited secrets.** A secret with a view limit
+  stays in Redis until it is opened or Redis restarts. Applying
+  `MAX_TTL_SECONDS` to every secret would put a ceiling on that. It changes
+  behaviour for links that are opened days later, so it needs a setting and a
+  note in the UI.
+- **A memory cap for Redis.** The shipped configuration sets an eviction
+  policy but no `maxmemory`. Decide on a default, and on what the API should
+  answer when the store is full.
 - **Version in `/api/health`.** Return the deployed version so operators do
   not have to trust the badge in the UI. Consider per-dependency detail in
   `/api/ready`.
@@ -69,12 +82,17 @@ Make a running instance easier to observe and to trust.
 - **Argon2id on slow devices.** Key derivation takes a few seconds on older
   phones. The plan is to keep the parameters fixed and explain the wait in the
   UI. Weakening them per device would defeat the point.
-- **Smaller code issues.** `writeJSON` drops encoding errors without logging
-  them, and expired rate-limit buckets are only cleaned up on every 128th
-  request, which leaves them around for a long time under low traffic.
+- **Authenticated metadata.** File name, MIME type and size are stored next
+  to the ciphertext without being covered by the authentication tag. Binding
+  them to the ciphertext needs a new metadata version, with the current one
+  still readable.
 
 ## Later, maybe
 
+- **Published container images.** Images on a registry, so that running an
+  instance does not require building one. The frontend takes two settings at
+  build time, the source link and the password-mode fallback, and they have to
+  move to run time first.
 - **A managed-cloud deployment option.** Containers on a serverless platform
   with managed Redis, a managed load balancer for TLS and a WAF in front. It
   removes OS patching and brings observability with it, at roughly two to

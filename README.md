@@ -1,11 +1,20 @@
 # Ephemeral
 
+[![CI](https://github.com/EkanSvahn/ephemeral/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/EkanSvahn/ephemeral/actions/workflows/ci.yml)
+[![Release](https://img.shields.io/github/v/release/EkanSvahn/ephemeral)](https://github.com/EkanSvahn/ephemeral/releases)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
+
 Self-hosted secret sharing for notes and files. A secret is encrypted in the
 browser, stored on the server as ciphertext, and deleted once it has been
 opened or when its time runs out.
 
 Ephemeral follows the same pattern as PrivNote and Cryptgeon. It is built on Go
 and Vue, and ships with hardened defaults for running it yourself.
+
+<p>
+  <img src="docs/images/create.png" alt="Writing a secret" width="49%">
+  <img src="docs/images/open.png" alt="The secret after the recipient has opened the link" width="49%">
+</p>
 
 ## How it works
 
@@ -29,7 +38,9 @@ and Vue, and ships with hardened defaults for running it yourself.
 - Argon2id for password-derived keys; older PBKDF2 links can still be opened
 - Per-IP rate limiting, strict request validation and payload caps
 - Security headers, a content security policy and structured logs that never
-  contain payloads or keys
+  contain payloads, keys or secret ids
+- No third-party requests: scripts, styles and fonts come from the instance
+  itself
 - Redis runs without persistence, and the API refuses to start against a Redis
   that persists to disk
 - Health, readiness and status endpoints, plus optional Prometheus metrics
@@ -95,7 +106,7 @@ values. The ones that change behaviour the most:
 | `ALLOWED_FILE_MIME_TYPES` | PDF, PNG, JPEG, plain text, octet-stream | File types accepted |
 | `MAX_TTL_SECONDS` | `86400` | Longest lifetime a secret can be given |
 | `MAX_VIEWS` | `100` | Highest view count a secret can be given |
-| `RATE_LIMIT_RPM`, `RATE_LIMIT_BURST` | `60`, `20` | Per-IP limit on each secret endpoint |
+| `RATE_LIMIT_RPM`, `RATE_LIMIT_BURST` | `60`, `20` | Limit per client address on each secret endpoint. IPv6 clients are counted per /64 |
 | `TRUSTED_PROXY_CIDR` | `172.16.0.0/12` in the production template | Proxy network whose `X-Forwarded-For` is trusted. Without it all visitors share one rate limit |
 | `STRICT_REDIS_EPHEMERAL` | `true` | Refuse to start if Redis persistence is on |
 | `METRICS_ENABLED` | `false` | Expose `/api/metrics` |
@@ -149,7 +160,8 @@ Ephemeral is maintained by one person and runs in production on a small scale.
 It has not had an independent security audit. Read the threat model and decide
 whether that fits what you want to use it for.
 
-Planned work is in the [roadmap](docs/roadmap.md).
+Planned work is in the [roadmap](docs/roadmap.md), and what changed between
+versions is in the [changelog](CHANGELOG.md).
 
 ## Making it your own
 

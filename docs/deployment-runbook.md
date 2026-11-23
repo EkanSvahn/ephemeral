@@ -114,7 +114,8 @@ after the checkout, as in the steps above.
 
 1. Make sure CI on `main` is green.
 2. Set the new version in `frontend/package.json` and
-   `frontend/package-lock.json`.
+   `frontend/package-lock.json`, and move the entries under "Unreleased" in
+   `CHANGELOG.md` to a section for the version.
 3. Merge that as a release pull request.
 4. Create the tag and the GitHub release from `main`.
 5. Deploy from the tag and check the version badge, `/api/ready` and
