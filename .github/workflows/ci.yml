@@ -134,6 +134,25 @@ jobs:
       - name: Build frontend image
         run: docker build -t ephemeral-frontend:ci ./frontend
 
+      # nginx reads its configuration when the container starts, so a mistake
+      # in nginx.conf would otherwise first show up on a deployed instance.
+      - name: Smoke test frontend image
+        run: |
+          docker run -d --name web -p 8088:80 ephemeral-frontend:ci
+          for attempt in $(seq 1 20); do
+            curl -fsS -o /dev/null http://127.0.0.1:8088/ && break
+            sleep 0.5
+          done
+          # A share link is served by the single-page app.
+          curl -fsS -o /dev/null http://127.0.0.1:8088/s/smoke-test-id
+          curl -fsSI http://127.0.0.1:8088/ | grep -i '^content-security-policy:'
+          # The id in a share link must not end up in the container log.
+          if docker logs web 2>&1 | grep -q 'smoke-test-id'; then
+            echo "The web server logged a secret id" >&2
+            exit 1
+          fi
+          docker rm -f web
+
       - name: Scan backend image
         uses: aquasecurity/trivy-action@ed142fd0673e97e23eac54620cfb913e5ce36c25 # v0.36.0
         with:
