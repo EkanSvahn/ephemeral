@@ -39,8 +39,13 @@ The first release under the name Ephemeral and under the MIT license.
   and how the size limits depend on each other.
 - The API image builds for the architecture of the host, so the stack runs on
   arm64 as well as amd64.
+- The API warns at startup when the size limits contradict each other, and
+  when `TRUSTED_PROXY_CIDR` is set but is not a valid CIDR. Both were silent
+  before.
 - A known-answer test for Argon2id. A library update that changes key
   derivation now fails the build before it can break links already shared.
+- Tests that load both `.env.example` files, so a template that the API would
+  reject fails the build.
 - CI: `gofmt` and `go vet`, the frontend tested on Node 22 and 26, a job that
   follows the self-hosting steps and validates both compose files and the
   proxy configuration, a smoke test that starts the frontend image, and a
@@ -54,6 +59,7 @@ The first release under the name Ephemeral and under the MIT license.
 - Go 1.27, Vite 8, Vitest 5, TypeScript 7, `@noble/hashes` 2.4, go-redis 9.23
   and testcontainers 0.45. The frontend image builds on Node 26 and is served
   by nginx 1.31.
+- `MAX_BODY_BYTES` must be between 4 KiB and 1 GiB. It had no range check.
 - The rate limiter drops a client's bucket as soon as it has refilled, and
   sweeps once a minute. Before, buckets were kept for 30 minutes and swept on
   every 128th request.
