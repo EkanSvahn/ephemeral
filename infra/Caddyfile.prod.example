@@ -1,0 +1,44 @@
+# Proxy configuration for infra/docker-compose.prod.yml.
+#
+# Copy this file to infra/Caddyfile.prod and replace the domain below.
+# infra/Caddyfile.prod is gitignored, so your copy survives every update.
+# If the same proxy serves other sites, add their site blocks to your copy.
+#
+# Caddy obtains and renews the TLS certificate on its own. To give the
+# certificate authority a contact address, add this block at the very top:
+#
+#   {
+#       email you@your-domain.example
+#   }
+
+secrets.example.com {
+	encode gzip zstd
+
+	header {
+		-Server
+		Strict-Transport-Security "max-age=63072000; includeSubDomains; preload"
+		X-Content-Type-Options "nosniff"
+		X-Frame-Options "DENY"
+		Referrer-Policy "no-referrer"
+		Permissions-Policy "camera=(), microphone=(), geolocation=()"
+	}
+
+	# X-Forwarded-For is replaced with the address Caddy sees, never appended
+	# to. The API uses it for rate limiting when TRUSTED_PROXY_CIDR is set.
+	@api path /api/*
+	handle @api {
+		reverse_proxy backend:8080 {
+			trusted_proxies private_ranges
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+
+	handle {
+		reverse_proxy web:80 {
+			trusted_proxies private_ranges
+			header_up X-Forwarded-Proto {scheme}
+			header_up X-Forwarded-For {remote_host}
+		}
+	}
+}

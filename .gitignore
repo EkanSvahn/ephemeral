@@ -16,6 +16,9 @@ backend/.cache/
 infra/.env
 *.local
 
+# Deployment-specific proxy configuration, copied from Caddyfile.prod.example
+infra/Caddyfile.prod
+
 # Logs
 *.log
 

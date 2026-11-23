@@ -1,9 +1,10 @@
 # Production Hardening Baseline
 
 ## 1) Reverse Proxy and TLS
-- Use `infra/Caddyfile.prod` with your real domain.
+- Copy `infra/Caddyfile.prod.example` to `infra/Caddyfile.prod` and set your real domain.
 - Terminate TLS at the proxy and enable HSTS.
 - Route `/api/*` to backend and everything else to frontend.
+- The shipped configuration replaces `X-Forwarded-For` with the address the proxy sees. Keep that if you write your own, so a client cannot choose the address it is rate limited by.
 
 ## 2) Required Environment Policy
 - `REQUIRE_PASSWORD=true` for organization/internal deployments.

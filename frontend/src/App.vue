@@ -6,7 +6,7 @@ const appVersion = __APP_VERSION__.startsWith('v') ? __APP_VERSION__ : `v${__APP
 const theme = ref<'light' | 'dark'>('dark')
 const logoSrc = ref('/ephemeral_logo.svg')
 const route = useRoute()
-const codeUrl = (import.meta.env.VITE_CODE_URL as string | undefined) ?? 'https://github.com'
+const codeUrl = (import.meta.env.VITE_CODE_URL as string | undefined) || 'https://github.com/EkanSvahn/ephemeral'
 
 onMounted(() => {
   const stored = localStorage.getItem('ephemeral-theme') ?? localStorage.getItem('vaultdrop-theme')
