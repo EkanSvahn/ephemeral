@@ -84,6 +84,8 @@ docs/                      threat model, hardening, runbook, roadmap
   `.editorconfig`.
 - When behaviour or configuration changes, update the README, the relevant
   file in `docs/` and both `.env.example` files in the same pull request.
+- Add a line under "Unreleased" in `CHANGELOG.md` for anything a user or an
+  operator would notice.
 
 ## Commits and branches
 

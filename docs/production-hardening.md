@@ -28,3 +28,5 @@
 - Keep dependency updates active via Dependabot.
 - Review logs only for metadata: request id, route template, status, duration.
 - Never log secret payloads, decryption keys, or URL fragments.
+- The shipped web server and API keep secret ids out of their logs. If another proxy, a CDN or a WAF sits in front, check what it logs: an id is enough to use up a secret.
+- Decide how long API logs are kept. They contain client addresses.
