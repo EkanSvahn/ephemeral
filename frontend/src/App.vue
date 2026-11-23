@@ -9,6 +9,8 @@ const route = useRoute()
 const codeUrl = (import.meta.env.VITE_CODE_URL as string | undefined) || 'https://github.com/EkanSvahn/ephemeral'
 
 onMounted(() => {
+  // 'vaultdrop-theme' is the key from before the project was renamed. Reading
+  // it keeps the theme choice of people who used an earlier version.
   const stored = localStorage.getItem('ephemeral-theme') ?? localStorage.getItem('vaultdrop-theme')
   if (stored === 'light' || stored === 'dark') {
     theme.value = stored
