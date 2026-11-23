@@ -23,6 +23,9 @@ func main() {
 		slog.Error("invalid configuration", "error", err.Error())
 		os.Exit(1)
 	}
+	for _, warning := range cfg.Warnings() {
+		slog.Warn("configuration warning", "detail", warning)
+	}
 
 	redisOptions, err := redis.ParseURL(cfg.RedisURL)
 	if err != nil {
