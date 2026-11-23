@@ -18,7 +18,8 @@ Everyone taking part is expected to follow the
 ## Development setup
 
 You need Docker with the Compose plugin. To run tests outside Docker you also
-need Go 1.27 or later and Node 22 or later.
+need Go 1.27 or later and Node 22 or later. CI tests the frontend on Node 22
+and on Node 26, which is the version the images are built with.
 
 ```bash
 cd infra
