@@ -10,17 +10,20 @@ import (
 	"ephemeral/backend/internal/metrics"
 )
 
+// cleanupInterval is how often Allow sweeps the bucket map.
+const cleanupInterval = time.Minute
+
 type tokenBucket struct {
 	tokens     float64
 	lastRefill time.Time
 }
 
 type Limiter struct {
-	mu       sync.Mutex
-	buckets  map[string]*tokenBucket
-	ratePerS float64
-	burst    float64
-	opCount  int
+	mu          sync.Mutex
+	buckets     map[string]*tokenBucket
+	ratePerS    float64
+	burst       float64
+	lastCleanup time.Time
 }
 
 func NewLimiter(rpm int, burst int) *Limiter {
@@ -34,6 +37,8 @@ func NewLimiter(rpm int, burst int) *Limiter {
 func (l *Limiter) Allow(key string, now time.Time) bool {
 	l.mu.Lock()
 	defer l.mu.Unlock()
+
+	l.cleanupRefilled(now)
 
 	bucket, ok := l.buckets[key]
 	if !ok {
@@ -49,21 +54,25 @@ func (l *Limiter) Allow(key string, now time.Time) bool {
 	bucket.lastRefill = now
 
 	if bucket.tokens < 1.0 {
-		l.cleanupExpired(now)
 		return false
 	}
 	bucket.tokens -= 1.0
-	l.cleanupExpired(now)
 	return true
 }
 
-func (l *Limiter) cleanupExpired(now time.Time) {
-	l.opCount++
-	if l.opCount%128 != 0 {
+// cleanupRefilled removes every bucket that has refilled completely. Such a
+// bucket behaves exactly like one that does not exist yet, so dropping it
+// never gives a client more requests than it was entitled to. The sweep runs
+// at most once per cleanupInterval, which keeps the map from growing without
+// bound when requests arrive from many addresses.
+func (l *Limiter) cleanupRefilled(now time.Time) {
+	if !l.lastCleanup.IsZero() && now.Sub(l.lastCleanup) < cleanupInterval {
 		return
 	}
+	l.lastCleanup = now
 	for key, bucket := range l.buckets {
-		if now.Sub(bucket.lastRefill) > 30*time.Minute {
+		refilled := bucket.tokens + now.Sub(bucket.lastRefill).Seconds()*l.ratePerS
+		if refilled >= l.burst {
 			delete(l.buckets, key)
 		}
 	}
@@ -80,7 +89,7 @@ func rateLimit(limiter *Limiter, counters *metrics.Counters, resolveClientIP fun
 				next.ServeHTTP(w, r)
 				return
 			}
-			key := resolveClientIP(r) + "|" + routeKey
+			key := rateLimitClientKey(resolveClientIP(r)) + "|" + routeKey
 			if !limiter.Allow(key, time.Now()) {
 				if counters != nil {
 					counters.IncRateLimited()
@@ -94,6 +103,9 @@ func rateLimit(limiter *Limiter, counters *metrics.Counters, resolveClientIP fun
 	}
 }
 
+// classifyProtectedRoute returns the route template for the endpoints that
+// read or write secrets. The template is the rate-limit key and the label in
+// the access log, so a secret id never ends up in either.
 func classifyProtectedRoute(method, rawPath string) (string, bool) {
 	p := path.Clean(strings.TrimSpace(rawPath))
 	if p == "." {
@@ -114,7 +126,9 @@ func classifyProtectedRoute(method, rawPath string) (string, bool) {
 			}
 			return "", false
 		}
-		if method == http.MethodGet {
+		// The router serves HEAD through the GET handler, so both count
+		// against the same limit.
+		if method == http.MethodGet || method == http.MethodHead {
 			return "GET /api/v1/secrets/{id}", true
 		}
 	}

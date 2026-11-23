@@ -2,7 +2,9 @@ package main
 
 import (
 	"context"
+	"errors"
 	"log/slog"
+	"net/http"
 	"os"
 	"os/signal"
 	"syscall"
@@ -58,7 +60,7 @@ func main() {
 
 	go func() {
 		slog.Info("server starting", "addr", cfg.ListenAddr)
-		if err := server.ListenAndServe(); err != nil && err.Error() != "http: Server closed" {
+		if err := server.ListenAndServe(); err != nil && !errors.Is(err, http.ErrServerClosed) {
 			slog.Error("server stopped", "error", err.Error())
 			os.Exit(1)
 		}
