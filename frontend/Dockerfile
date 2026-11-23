@@ -1,6 +1,6 @@
 # check=skip=SecretsUsedInArgOrEnv
 # VITE_REQUIRE_PASSWORD is a boolean policy flag, not a credential.
-FROM node:22-alpine AS build
+FROM node:26-alpine AS build
 WORKDIR /app
 ARG VITE_API_BASE_URL=/api
 ARG VITE_REQUIRE_PASSWORD=false
