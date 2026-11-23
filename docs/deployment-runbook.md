@@ -106,9 +106,19 @@ docker compose -f docker-compose.prod.yml up -d --build
 
 Then repeat the checks from section 3.
 
-Rolling back from 0.2.0 or later to 0.1.x brings the tracked
-`infra/Caddyfile.prod` back. Copy your own file aside first and put it back
-after the checkout, as in the steps above.
+**Rolling back from 0.2.0 or later to 0.1.x replaces your proxy
+configuration.** In 0.1.x `infra/Caddyfile.prod` is a tracked file, and
+because your copy is ignored, git overwrites it with the example without
+asking. Copy it aside first and put it back after the checkout:
+
+```bash
+cp infra/Caddyfile.prod ~/Caddyfile.prod.keep
+git checkout v0.1.6
+cp ~/Caddyfile.prod.keep infra/Caddyfile.prod
+```
+
+The running proxy is not affected until it restarts, so check the file before
+you move on.
 
 ## 6) Release procedure (`vX.Y.Z`)
 
