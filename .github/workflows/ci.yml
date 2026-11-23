@@ -62,13 +62,20 @@ jobs:
 
   frontend-build:
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # 22 is the oldest version CONTRIBUTING.md promises. 26 is what the
+        # frontend image and the development stack are built with.
+        node: ['22', '26']
+    name: frontend-build (Node ${{ matrix.node }})
     env:
       VITE_APP_VERSION: ${{ github.ref_type == 'tag' && github.ref_name || github.sha }}
     steps:
       - uses: actions/checkout@v7
       - uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          node-version: ${{ matrix.node }}
       # The UI shows the version from package.json in images built with
       # Docker, so a release tag has to match it.
       - name: Check that the tag matches package.json
