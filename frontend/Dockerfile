@@ -4,8 +4,12 @@ FROM node:22-alpine AS build
 WORKDIR /app
 ARG VITE_API_BASE_URL=/api
 ARG VITE_REQUIRE_PASSWORD=false
+# Where the /code link in the navigation points. Forks set this to their own
+# repository.
+ARG VITE_CODE_URL=https://github.com/EkanSvahn/ephemeral
 ENV VITE_API_BASE_URL=${VITE_API_BASE_URL}
 ENV VITE_REQUIRE_PASSWORD=${VITE_REQUIRE_PASSWORD}
+ENV VITE_CODE_URL=${VITE_CODE_URL}
 COPY package.json package-lock.json ./
 RUN npm ci
 COPY . .

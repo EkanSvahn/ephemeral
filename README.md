@@ -55,12 +55,13 @@ headers, nginx serving the built frontend, the Go API, and Redis without
 persistence.
 
 1. Point DNS for your domain at the host.
-2. Copy the environment template and set your origin:
+2. Create your configuration from the two templates:
    ```bash
    cp infra/.env.example infra/.env
-   # set ALLOWED_ORIGINS=https://your-domain and review the rest
+   cp infra/Caddyfile.prod.example infra/Caddyfile.prod
    ```
-3. Replace the example domain and contact address in `infra/Caddyfile.prod`.
+3. Set `ALLOWED_ORIGINS=https://your-domain` in `infra/.env` and review the
+   rest. Replace the example domain in `infra/Caddyfile.prod`.
 4. Start it:
    ```bash
    cd infra
@@ -70,6 +71,9 @@ persistence.
    ```bash
    curl -fsS https://your-domain/api/ready
    ```
+
+Both files are gitignored. No tracked file has to be edited, so a later update
+is a `git pull` and a rebuild.
 
 Before you expose an instance, read the
 [production hardening baseline](docs/production-hardening.md), the
@@ -92,15 +96,16 @@ values. The ones that change behaviour the most:
 | `MAX_TTL_SECONDS` | `86400` | Longest lifetime a secret can be given |
 | `MAX_VIEWS` | `100` | Highest view count a secret can be given |
 | `RATE_LIMIT_RPM`, `RATE_LIMIT_BURST` | `60`, `20` | Per-IP limit on each secret endpoint |
-| `TRUSTED_PROXY_CIDR` | empty | Proxy network whose `X-Forwarded-For` is trusted |
+| `TRUSTED_PROXY_CIDR` | `172.16.0.0/12` in the production template | Proxy network whose `X-Forwarded-For` is trusted. Without it all visitors share one rate limit |
 | `STRICT_REDIS_EPHEMERAL` | `true` | Refuse to start if Redis persistence is on |
 | `METRICS_ENABLED` | `false` | Expose `/api/metrics` |
 
-Raising the file limit means raising `MAX_BODY_BYTES`, `MAX_CIPHERTEXT_BYTES`
-and `REQUEST_TIMEOUT_MS` with it. Files are encrypted in browser memory and
-stored in Redis, so the design suits secrets and small to medium files. For
-something like a database backup, send the file another way and use Ephemeral
-for the key.
+Raising the file limit means raising `MAX_CIPHERTEXT_BYTES` and
+`MAX_BODY_BYTES` with it, because an encrypted file is about a third larger on
+the wire. [`infra/.env.example`](infra/.env.example) shows the arithmetic.
+Files are encrypted in browser memory and stored in Redis, so the design suits
+secrets and small to medium files. For something like a database backup, send
+the file another way and use Ephemeral for the key.
 
 ## API
 
@@ -151,6 +156,7 @@ Planned work is in the [roadmap](docs/roadmap.md).
 Forks are welcome. The places you will most likely want to change:
 
 - **Domain and policy:** `infra/.env` and `infra/Caddyfile.prod`
+- **Source link in the navigation:** `VITE_CODE_URL` in `infra/.env`
 - **Logo and favicon:** `frontend/public/ephemeral_logo.svg`
 - **Colours and typography:** `frontend/src/assets/main.css`
 - **Text on the info page:** `frontend/src/views/InfoView.vue`

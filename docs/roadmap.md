@@ -30,6 +30,16 @@ open an issue first so the work is not done twice.
 - `/api/metrics` serves Prometheus text format
 - Third-party CI actions pinned to commit SHAs
 
+**Deploying without editing tracked files**
+
+- Proxy configuration ships as `infra/Caddyfile.prod.example`. The real file
+  is gitignored, the same way `infra/.env` is, so an operator who runs several
+  sites behind one proxy no longer carries a local diff
+- The source link in the navigation is a build setting, `VITE_CODE_URL`
+- The API image builds for the architecture of the host, amd64 or arm64
+- CI follows the self-hosting steps and validates both compose files and the
+  proxy configuration
+
 ## Next: operations
 
 Make a running instance easier to observe and to trust.
@@ -53,13 +63,9 @@ Make a running instance easier to observe and to trust.
 
 ## Then: polish
 
-- **Proxy configuration as a template.** Ship `infra/Caddyfile.prod.example`
-  and keep the real file out of version control, the same way `infra/.env`
-  works. Operators who run several sites behind one proxy currently have to
-  carry a local diff.
-- **Branding through configuration.** Logo, product name and the source link
-  set at build or run time, so a fork does not have to edit source files to
-  look like its own.
+- **Branding through configuration.** Logo and product name set at build or
+  run time, so a fork does not have to edit source files to look like its
+  own. The source link already works this way.
 - **Argon2id on slow devices.** Key derivation takes a few seconds on older
   phones. The plan is to keep the parameters fixed and explain the wait in the
   UI. Weakening them per device would defeat the point.
